@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: index
+  name: index
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: index
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/mlinarik-bridge: "true"
+        io.kompose.service: index
+    spec:
+      containers:
+        - image: solr:8
+          name: xwiki-index
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d
+              name: index-claim0
+            - mountPath: /opt/solr/server/solr
+              name: solr-data
+      restartPolicy: Always
+      volumes:
+        - name: index-claim0
+          persistentVolumeClaim:
+            claimName: index-claim0
+        - name: solr-data
+          persistentVolumeClaim:
+            claimName: solr-data

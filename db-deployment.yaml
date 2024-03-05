@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/mlinarik-bridge: "true"
+        io.kompose.service: db
+    spec:
+      containers:
+        - args:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_bin
+            - --explicit-defaults-for-timestamp=1
+          env:
+            - name: MYSQL_DATABASE
+              value: xwiki
+            - name: MYSQL_PASSWORD
+              value: xwiki
+            - name: MYSQL_ROOT_PASSWORD
+              value: xwiki
+            - name: MYSQL_USER
+              value: xwiki
+          image: mysql:8.3
+          name: xwiki-db
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-data
+      restartPolicy: Always
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-data
